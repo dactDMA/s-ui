@@ -59,6 +59,9 @@ func TestInboundDefaults(t *testing.T) {
 		{name: "naive", listens: true, options: map[string]any{
 			"type": "naive", "tls": tlsOptions,
 			"users": []any{map[string]any{"username": "u", "password": "p"}}}},
+		{name: "naive-masquerade", listens: true, options: map[string]any{
+			"type": "naive", "tls": tlsOptions, "masquerade": "http://127.0.0.1:8080",
+			"users": []any{map[string]any{"username": "u", "password": "p"}}}},
 		{name: "shadowtls-v3", listens: true, options: map[string]any{
 			"type": "shadowtls", "version": 3,
 			"handshake": map[string]any{"server": "example.com", "server_port": 443},

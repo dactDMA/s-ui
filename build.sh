@@ -9,6 +9,7 @@ if [ ! -d frontend ]; then
     exit 1
 fi
 
+node scripts/prepare-frontend.mjs
 (cd frontend && npm i && npm run build)
 
 echo "Backend"

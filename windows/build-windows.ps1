@@ -47,6 +47,10 @@ try {
 
 # Build frontend
 Write-Host "Building frontend..." -ForegroundColor Yellow
+node scripts/prepare-frontend.mjs
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to prepare frontend sources"
+}
 Push-Location frontend
 
 try {

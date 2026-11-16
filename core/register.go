@@ -4,6 +4,7 @@ import (
 	suiAnytls "github.com/alireza0/s-ui/core/protocol/anytls"
 	suiHysteria "github.com/alireza0/s-ui/core/protocol/hysteria"
 	suiHysteria2 "github.com/alireza0/s-ui/core/protocol/hysteria2"
+	suiNaive "github.com/alireza0/s-ui/core/protocol/naive"
 	suiShadowsocks "github.com/alireza0/s-ui/core/protocol/shadowsocks"
 	suiSnell "github.com/alireza0/s-ui/core/protocol/snell"
 	suiTrojan "github.com/alireza0/s-ui/core/protocol/trojan"
@@ -33,8 +34,6 @@ import (
 	"github.com/sagernet/sing-box/protocol/hysteria"
 	"github.com/sagernet/sing-box/protocol/hysteria2"
 	"github.com/sagernet/sing-box/protocol/mixed"
-	"github.com/sagernet/sing-box/protocol/naive"
-	_ "github.com/sagernet/sing-box/protocol/naive/quic"
 	"github.com/sagernet/sing-box/protocol/redirect"
 	"github.com/sagernet/sing-box/protocol/shadowsocks"
 	"github.com/sagernet/sing-box/protocol/shadowtls"
@@ -73,7 +72,7 @@ func InboundRegistry() *inbound.Registry {
 	suiSnell.RegisterInbound(registry)
 	suiVmess.RegisterInbound(registry)
 	suiTrojan.RegisterInbound(registry)
-	naive.RegisterInbound(registry)
+	suiNaive.RegisterInbound(registry)
 	shadowtls.RegisterInbound(registry)
 	suiVless.RegisterInbound(registry)
 	suiAnytls.RegisterInbound(registry)

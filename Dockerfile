@@ -1,7 +1,9 @@
 FROM --platform=$BUILDPLATFORM node:26-alpine AS front-builder
 WORKDIR /app
-COPY frontend/ ./
-RUN npm ci && npm run build
+RUN apk add --no-cache git
+COPY scripts/prepare-frontend.mjs scripts/frontend-naive-masquerade.patch ./scripts/
+COPY frontend/ ./frontend/
+RUN node scripts/prepare-frontend.mjs && cd frontend && npm ci && npm run build
 
 FROM golang:1.27-alpine AS backend-builder
 WORKDIR /app
@@ -38,7 +40,7 @@ RUN CRONET_DIR=$(go list -m -f '{{.Dir}}' github.com/sagernet/cronet-go/lib/linu
     chmod 755 ./libcronet.so
 
 COPY . .
-COPY --from=front-builder /app/dist/ /app/web/html/
+COPY --from=front-builder /app/frontend/dist/ /app/web/html/
 
 RUN if [ "$TARGETARCH" = "arm" ]; then export GOARM=7; [ "$TARGETVARIANT" = "v6" ] && export GOARM=6; fi; \
     . ./build-tags.sh && \

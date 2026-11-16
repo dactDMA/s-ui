@@ -1,0 +1,428 @@
+diff --git a/src/components/Masquerade.vue b/src/components/Masquerade.vue
+new file mode 100644
+index 0000000..9b43cbf
+--- /dev/null
++++ b/src/components/Masquerade.vue
+@@ -0,0 +1,126 @@
++<template>
++  <v-card
++    :subtitle="title"
++  >
++    <v-row>
++      <v-col
++        cols="12"
++        sm="6"
++        md="4"
++      >
++        <v-select
++          v-model="masqueradeType"
++          hide-details
++          :label="$t('type')"
++          :items="masqTypes"
++        />
++      </v-col>
++      <v-col
++        v-if="masqueradeType == ''"
++        cols="12"
++        sm="8"
++      >
++        <v-text-field
++          v-model="config"
++          :label="simpleLabel"
++          placeholder="file:///var/www | http://127.0.0.1:8080"
++          hide-details
++        />
++      </v-col>
++      <v-col
++        v-if="masqueradeType == 'file'"
++        cols="12"
++        sm="8"
++      >
++        <v-text-field
++          v-model="masquerade.directory"
++          label="File server root directory"
++          placeholder="/var/www"
++          hide-details
++        />
++      </v-col>
++      <v-col
++        v-if="masqueradeType == 'string'"
++        cols="12"
++        sm="6"
++        md="4"
++      >
++        <v-text-field
++          v-model.number="masquerade.status_code"
++          label="HTTP Code"
++          type="number"
++          :min="minStatus"
++          max="599"
++          hide-details
++        />
++      </v-col>
++    </v-row>
++    <v-row v-if="masqueradeType == 'proxy'">
++      <v-col
++        cols="12"
++        sm="6"
++      >
++        <v-text-field
++          v-model="masquerade.url"
++          label="Target URL"
++          placeholder="http://example.com:8080"
++          hide-details
++        />
++      </v-col>
++      <v-col
++        cols="12"
++        sm="6"
++        md="4"
++      >
++        <v-switch
++          v-model="masquerade.rewrite_host"
++          label="Rewrite Host"
++          color="primary"
++          hide-details
++        />
++      </v-col>
++    </v-row>
++    <template v-if="masqueradeType == 'string'">
++      <v-row>
++        <v-col
++          cols="12"
++          sm="8"
++        >
++          <v-text-field
++            v-model="masquerade.content"
++            label="Content"
++            hide-details
++          />
++        </v-col>
++      </v-row>
++      <Headers :data="masquerade" />
++    </template>
++  </v-card>
++</template>
++
++<script setup lang="ts">
++import { computed } from 'vue'
++import Headers from '@/components/Headers.vue'
++import { i18n } from '@/locales'
++import type { MasqueradeConfig, MasqueradeOptions } from '@/types/inbounds'
++
++withDefaults(defineProps<{
++  title: string
++  simpleLabel: string
++  minStatus?: number
++}>(), { minStatus: 200 })
++
++const config = defineModel<MasqueradeConfig>()
++const masqTypes = [
++  { title: i18n.global.t('rule.simple'), value: '' },
++  { title: 'File server', value: 'file' },
++  { title: 'Reverse Proxy', value: 'proxy' },
++  { title: 'Fixed response', value: 'string' },
++]
++
++const masquerade = computed(() => config.value as MasqueradeOptions)
++const masqueradeType = computed({
++  get: () => typeof config.value === 'object' ? config.value.type : '',
++  set: (type: string) => { config.value = type ? { type } : '' },
++})
++</script>
+diff --git a/src/components/protocols/Hysteria2.vue b/src/components/protocols/Hysteria2.vue
+index 844daac..58b04df 100644
+--- a/src/components/protocols/Hysteria2.vue
++++ b/src/components/protocols/Hysteria2.vue
+@@ -101,104 +101,13 @@
+       </template>
+     </v-row>
+     <template v-if="direction == 'in'">
+-      <v-card
+-        v-if="data.masquerade != undefined"
+-        subtitle="Hysteria2 Masquerade"
+-      >
+-        <v-row>
+-          <v-col
+-            cols="12"
+-            sm="6"
+-            md="4"
+-          >
+-            <v-select
+-              v-model="masqueradeType"
+-              hide-details
+-              :label="$t('type')"
+-              :items="masqTypes"
+-            />
+-          </v-col>
+-          <v-col
+-            v-if="masqueradeType == ''"
+-            cols="12"
+-            sm="8"
+-          >
+-            <v-text-field
+-              v-model="data.masquerade"
+-              label="HTTP3 server on auth fails"
+-              placeholder="file:///var/www | http://127.0.0.1:8080"
+-              hide-details
+-            />
+-          </v-col>
+-          <v-col
+-            v-if="masqueradeType == 'file'"
+-            cols="12"
+-            sm="8"
+-          >
+-            <v-text-field
+-              v-model="masquerade.directory"
+-              label="File server root directory"
+-              placeholder="/var/www"
+-              hide-details
+-            />
+-          </v-col>
+-          <v-col
+-            v-if="masqueradeType == 'string'"
+-            cols="12"
+-            sm="6"
+-            md="4"
+-          >
+-            <v-text-field
+-              v-model.number="masquerade.status_code"
+-              label="HTTP Code"
+-              type="number"
+-              min="100"
+-              max="599"
+-              hide-details
+-            />
+-          </v-col>
+-        </v-row>
+-        <v-row v-if="masqueradeType == 'proxy'">
+-          <v-col
+-            cols="12"
+-            sm="6"
+-          >
+-            <v-text-field
+-              v-model="masquerade.url"
+-              label="Target URL"
+-              placeholder="http://example.com:8080"
+-              hide-details
+-            />
+-          </v-col>
+-          <v-col
+-            cols="12"
+-            sm="6"
+-            md="4"
+-          >
+-            <v-switch
+-              v-model="masquerade.rewrite_host"
+-              label="Rewrite Host"
+-              color="primary"
+-              hide-details
+-            />
+-          </v-col>
+-        </v-row>
+-        <template v-if="masqueradeType == 'string'">
+-          <v-row>
+-            <v-col
+-              cols="12"
+-              sm="8"
+-            >
+-              <v-text-field
+-                v-model="masquerade.content"
+-                label="Content"
+-                hide-details
+-              />
+-            </v-col>
+-          </v-row>
+-          <Headers :data="masquerade" />
+-        </template>
+-      </v-card>
++      <Masquerade
++        v-if="data.masquerade !== undefined"
++        v-model="data.masquerade"
++        title="Hysteria2 Masquerade"
++        simple-label="HTTP3 server on auth fails"
++        :min-status="100"
++      />
+     </template>
+     <template v-else>
+       <v-row>
+@@ -319,24 +228,11 @@
+ import { computed, ref } from 'vue'
+ import QuicFields from '@/components/QuicFields.vue'
+ import Network from '@/components/Network.vue'
+-import Headers from '@/components/Headers.vue'
++import Masquerade from '@/components/Masquerade.vue'
+ import Hysteria2Realm from '@/components/Hysteria2Realm.vue'
+-import { i18n } from '@/locales'
+-import { Inbound, Hysteria2Obfs } from '@/types/inbounds'
++import { Inbound, Hysteria2Obfs, MasqueradeConfig } from '@/types/inbounds'
+ import { Outbound, Hysteria2Realm as Realm } from '@/types/outbounds'
+ 
+-// The masquerade is either a bare URL string or one of the object forms; the
+-// type field picks which of the object fields apply.
+-interface Hysteria2Masquerade {
+-  type: string
+-  directory?: string
+-  url?: string
+-  rewrite_host?: boolean
+-  status_code?: number
+-  content?: string
+-  headers?: Record<string, string | string[]>
+-}
+-
+ // One form serves both directions, so it takes the widest shape either side
+ // can hold: only the inbound side carries the masquerade and the bandwidth
+ // override, only the outbound side the password and the port hopping.
+@@ -345,7 +241,7 @@ interface Hysteria2Data {
+   up_mbps?: number
+   down_mbps?: number
+   obfs?: Hysteria2Obfs
+-  masquerade?: string | Hysteria2Masquerade
++  masquerade?: MasqueradeConfig
+   password?: string
+   server?: string
+   server_port?: number
+@@ -369,17 +265,6 @@ const options = defineProps<{
+ 
+ const menu = ref(false)
+ 
+-const masqTypes = [
+-  { title: i18n.global.t('rule.simple'), value: '' },
+-  { title: "File server", value: "file" },
+-  { title: "Reverse Proxy", value: "proxy" },
+-  { title: "Fixed response", value: "string" },
+-]
+-
+-// The masquerade type select decides which shape the field holds, which the
+-// template checker cannot follow either, so expose the object form once here.
+-const masquerade = computed(() => data.value.masquerade as Hysteria2Masquerade)
+-
+ const down_mbps = computed({
+   get: (): number => data.value.down_mbps ?? 0,
+   set: (v: number) => { data.value.down_mbps = v > 0 ? v : undefined },
+@@ -395,17 +280,6 @@ const server_ports = computed({
+   set: (v: string) => { data.value.server_ports = v.length > 0 ? v.split(',') : undefined },
+ })
+ 
+-const masqueradeType = computed({
+-  get: (): string => typeof data.value.masquerade === 'object' ? data.value.masquerade.type ?? '' : '',
+-  set: (v: string) => {
+-    if (v == '') {
+-      data.value.masquerade = ''
+-    } else {
+-      data.value.masquerade = { type: v }
+-    }
+-  },
+-})
+-
+ const hop_interval = computed({
+   get: (): number => {
+     const v = data.value.hop_interval
+diff --git a/src/components/protocols/Naive.vue b/src/components/protocols/Naive.vue
+index 3b7ec1e..32c3fab 100644
+--- a/src/components/protocols/Naive.vue
++++ b/src/components/protocols/Naive.vue
+@@ -27,7 +27,25 @@
+             @click:clear="delete data.quic_congestion_control"
+           />
+         </v-col>
++        <v-col
++          cols="12"
++          sm="6"
++          md="4"
++        >
++          <v-switch
++            v-model="optionMasq"
++            color="primary"
++            label="Masquerade"
++            hide-details
++          />
++        </v-col>
+       </v-row>
++      <Masquerade
++        v-if="data.masquerade !== undefined"
++        v-model="data.masquerade"
++        title="Naïve Masquerade"
++        simple-label="Website for ordinary HTTP requests"
++      />
+     </template>
+     <!-- Outbound -->
+     <template v-if="['out', 'out_json'].includes(direction)">
+@@ -121,15 +139,15 @@
+ import { computed } from 'vue'
+ import Network from '@/components/Network.vue'
+ import Headers from '@/components/Headers.vue'
+-import { Inbound } from '@/types/inbounds'
++import Masquerade from '@/components/Masquerade.vue'
++import { Inbound, MasqueradeConfig } from '@/types/inbounds'
+ import { Outbound } from '@/types/outbounds'
+ 
+ // One form serves both directions, so it takes the widest shape either side
+-// can hold: the inbound side only picks a congestion control, while the
+-// client fields, the extra headers and the QUIC toggle belong to the
+-// outbound side.
++// can hold, including the inbound's website and the outbound's client fields.
+ interface NaiveData {
+   quic_congestion_control?: 'bbr' | 'bbr_standard' | 'bbr2' | 'bbr2_variant' | 'cubic' | 'reno'
++  masquerade?: MasqueradeConfig
+   username?: string
+   password?: string
+   insecure_concurrency?: number
+@@ -174,6 +192,11 @@ const outCngs = [
+   { title: 'Reno', value: 'reno'},
+ ]
+ 
++const optionMasq = computed({
++  get: () => data.value.masquerade !== undefined,
++  set: (enabled: boolean) => { data.value.masquerade = enabled ? '' : undefined },
++})
++
+ const udpOverTcp = computed({
+   get: (): boolean => {
+     const u = data.value.udp_over_tcp
+diff --git a/src/types/inbounds.ts b/src/types/inbounds.ts
+index c06c1c4..0f8562a 100644
+--- a/src/types/inbounds.ts
++++ b/src/types/inbounds.ts
+@@ -101,6 +101,17 @@ export interface Trojan extends InboundBasics {
+ export interface Naive extends InboundBasics {
+   tls: iTls,
+   quic_congestion_control?: "" | "bbr" | "bbr2" | "cubic" | "reno"
++  masquerade?: MasqueradeConfig
++}
++export type MasqueradeConfig = string | MasqueradeOptions
++export interface MasqueradeOptions {
++  type: string
++  directory?: string
++  url?: string
++  rewrite_host?: boolean
++  status_code?: number
++  headers?: Record<string, string | string[]>
++  content?: string
+ }
+ // The QUIC fields replace hysteria's own recv_window_conn, recv_window_client,
+ // max_conn_client and disable_mtu_discovery, which sing-box still reads but has
+@@ -148,15 +159,7 @@ export interface Hysteria2 extends InboundBasics, QuicFields {
+   down_mbps?: number
+   obfs?: Hysteria2Obfs
+   ignore_client_bandwidth?: boolean
+-  masquerade?: string | {
+-    type: string
+-    directory?: string
+-    url?: string
+-    rewrite_host?: boolean
+-    status_code?: number
+-    headers?: Headers[]
+-    content?: string
+-  }
++  masquerade?: MasqueradeConfig
+   brutal_debug?: boolean
+   realm?: Hysteria2Realm
+ }
+@@ -296,4 +299,4 @@ export function createInbound<T extends Inbound>(type: InType,json?: Partial<T>)
+   const defaultObject: Inbound = { ...structuredClone(defaultValues[type] ?? {}), ...(json ?? {}) }
+   generateSecrets(defaultObject)
+   return defaultObject
+-}
+\ No newline at end of file
++}

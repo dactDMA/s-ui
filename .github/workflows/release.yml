@@ -47,6 +47,7 @@ jobs:
 
       - name: Build frontend
         run: |
+          node scripts/prepare-frontend.mjs
           cd frontend
           npm ci
           npm run build
